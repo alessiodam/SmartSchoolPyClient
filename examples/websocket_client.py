@@ -4,7 +4,7 @@ Websocket client example
 import os
 import logging
 import dotenv
-from smartschoolclient import SmartSchoolClient
+from smartschool import SmartSchoolClient
 
 
 def received_message_callback(sender, description, url, user_id):

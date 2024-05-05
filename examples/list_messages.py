@@ -5,7 +5,7 @@ import os
 import logging
 import time
 import dotenv
-from smartschoolclient import SmartSchoolClient
+from smartschool import SmartSchoolClient
 
 
 if __name__ == '__main__':
