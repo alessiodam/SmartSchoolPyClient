@@ -1,3 +1,6 @@
+"""
+Websocket client example
+"""
 import os
 import logging
 import dotenv
@@ -5,6 +8,9 @@ from smartschoolclient import SmartSchoolClient
 
 
 def received_message_callback(sender, description, url, user_id):
+    """
+    Callback function
+    """
     print(f"Received notification from {sender}: {description} ({url}) (User ID: {user_id})")
 
 

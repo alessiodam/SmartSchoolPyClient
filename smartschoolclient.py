@@ -1,3 +1,6 @@
+"""
+SmartSchool client API class
+"""
 import json
 import logging
 from xml.etree import ElementTree
@@ -8,10 +11,37 @@ import websocket
 
 
 class ApiException(Exception):
-    pass
+    """
+    Api exception
+    """
 
 
 class SmartSchoolClient:
+    """
+    SmartSchool client
+
+    Args:
+        domain: SmartSchool domain
+        phpsessid: PHPSESSID
+        pid: pid
+        user_id: user id
+        loglevel: logging level
+        received_message_callback: callback function
+
+    Attributes:
+        domain: SmartSchool domain
+        phpsessid: PHPSESSID
+        pid: pid
+        user_id: user id
+        received_message_callback: callback function
+
+    Methods:
+        get_token_from_api()
+        get_messages_from_api()
+        get_message_by_id(message_id)
+        list_messages()
+        run_websocket()
+    """
     def __init__(self, domain, phpsessid, pid, user_id, loglevel=logging.DEBUG, received_message_callback=None):
         self.domain = domain
         self.phpsessid = phpsessid
@@ -38,6 +68,9 @@ class SmartSchoolClient:
 
     # general stuff
     def get_token_from_api(self):
+        """
+        Get token from API
+        """
         self.api_logger.info("Requesting token from API")
         self.api_logger.debug("Sending request to get token")
         response = requests.get(
@@ -47,16 +80,19 @@ class SmartSchoolClient:
             },
             json={
                 'userID': self.user_id
-            }
+            },
+            timeout=10
         )
         if response.status_code == 200:
             self.api_logger.info("Token received")
             return response.text
-        else:
-            self.api_logger.error("Could not get token")
-            raise ApiException("Could not get token")
+        self.api_logger.error("Could not get token")
+        raise ApiException("Could not get token")
 
     def find_users_by_name(self, name):
+        """
+        Find users by name
+        """
         self.api_logger.info("Requesting user from API")
         self.api_logger.debug("Sending request to get user")
         response = requests.post(
@@ -65,7 +101,8 @@ class SmartSchoolClient:
                 "Cookie": f"pid={self.pid}; PHPSESSID={self.phpsessid}",
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-            data=f"val={name}&type=0&parentNodeId=insertSearchFieldContainer_0_0&xml=<results></results>"
+            data=f"val={name}&type=0&parentNodeId=insertSearchFieldContainer_0_0&xml=<results></results>",
+            timeout=10
         )
         if response.status_code == 200:
             self.api_logger.info("User received")
@@ -84,9 +121,8 @@ class SmartSchoolClient:
                 }
                 users.append(user)
             return users
-        else:
-            self.api_logger.error("Could not get user")
-            raise ApiException("Could not get user")
+        self.api_logger.error("Could not get user")
+        raise ApiException("Could not get user")
 
     def list_messages(self):
         """
@@ -121,16 +157,23 @@ class SmartSchoolClient:
             )
         }
 
-        response = requests.post(f'https://{self.domain}/?module=Messages&file=dispatcher', headers=headers, data=data)
+        response = requests.post(
+            f'https://{self.domain}/?module=Messages&file=dispatcher',
+            headers=headers,
+            data=data,
+            timeout=10
+        )
         if response.status_code == 200:
             self.api_logger.info("Messages received")
             return self.parse_message_response(response.text)
-        else:
-            self.api_logger.error("Could not get messages")
-            raise ApiException("Could not get messages")
+        self.api_logger.error("Could not get messages")
+        raise ApiException("Could not get messages")
 
     @staticmethod
     def parse_single_message_response(response_text):
+        """
+        Parse a single message from API response
+        """
         root = ElementTree.fromstring(response_text)
         message_elem = root.find('.//message')
         message = {
@@ -162,6 +205,9 @@ class SmartSchoolClient:
 
     @staticmethod
     def parse_message_response(response_text):
+        """
+        Parse messages from API response
+        """
         root = ElementTree.fromstring(response_text)
         messages = []
         for message_elem in root.findall('.//message'):
@@ -187,8 +233,11 @@ class SmartSchoolClient:
         return messages
 
     def get_message_by_id(self, message_id):
+        """
+        Get message by ID
+        """
         self.api_logger.info("Requesting message from API")
-        self.api_logger.debug(f"Sending request to get message with ID: {message_id}")
+        self.api_logger.debug("Sending request to get message with ID %s", message_id)
         headers = {
             'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -210,22 +259,35 @@ class SmartSchoolClient:
             )
         }
 
-        response = requests.post(f'https://{self.domain}/?module=Messages&file=dispatcher', headers=headers, data=data)
+        response = requests.post(
+            f'https://{self.domain}/?module=Messages&file=dispatcher',
+            headers=headers,
+            data=data,
+            timeout=10
+        )
         if response.status_code == 200:
             self.api_logger.info("Message received")
             return self.parse_single_message_response(response.text)
-        else:
-            self.api_logger.error("Could not get message")
-            raise ApiException("Could not get message")
+        self.api_logger.error("Could not get message")
+        raise ApiException("Could not get message")
 
     # websockets
-    def ws_on_error(self, ws, error):
-        self.websocket_logger.error(f"Error: {error}")
+    def ws_on_error(self, _, error):
+        """
+        Websocket error
+        """
+        self.websocket_logger.error("Error: %s", error)
 
-    def ws_on_close(self, ws, close_status_code, close_msg):
-        self.websocket_logger.info(f"WebSocket connection closed: {close_status_code} - {close_msg}")
+    def ws_on_close(self, _, close_status_code, close_msg):
+        """
+        Websocket close
+        """
+        self.websocket_logger.info("WebSocket connection closed: %s - %s", close_status_code, close_msg)
 
     def ws_on_open(self, ws):
+        """
+        Websocket open
+        """
         self.websocket_logger.info("WebSocket connection opened")
         auth_message = {
             "type": "auth",
@@ -235,7 +297,10 @@ class SmartSchoolClient:
         ws.send(json.dumps(auth_message))
 
     def ws_on_message(self, ws, message):
-        self.websocket_logger.debug(f"Received message: {message}")
+        """
+        Websocket message
+        """
+        self.websocket_logger.debug("Received message: %s", message)
         message_data = json.loads(message)
         message_type = message_data.get("type", None)
         message_text = message_data.get("text", None)
@@ -265,12 +330,16 @@ class SmartSchoolClient:
                             if sender is not None and description is not None and url is not None and user_id is not None:
                                 url = f"https://{self.domain}{url[1:]}"
                                 self.api_logger.info(
-                                    f"Received message from {sender}: {description} ({url})"
+                                    "Received message from %s: %s (%s)",
+                                    sender, description, url
                                 )
                                 if self.received_message_callback is not None:
                                     self.received_message_callback(sender, description, url, user_id)
 
     def run_websocket(self):
+        """
+        Run Websocket
+        """
         self.websocket_logger.info("Connecting to WebSocket")
         ws = websocket.WebSocketApp(
             "wss://nodejs-gs.smartschool.be/smsc/websocket",

@@ -1,3 +1,6 @@
+"""
+List messages example
+"""
 import os
 import logging
 import time
@@ -6,6 +9,9 @@ from smartschoolclient import SmartSchoolClient
 
 
 if __name__ == '__main__':
+    """
+    List messages
+    """
     os.makedirs("messages", exist_ok=True)
     dotenv.load_dotenv()
 
