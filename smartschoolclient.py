@@ -1,10 +1,10 @@
 import json
 import logging
+from xml.etree import ElementTree
+from uuid import uuid4
 import colorlog
 import requests
-from xml.etree import ElementTree
 import websocket
-from uuid import uuid4
 
 
 class ApiException(Exception):
@@ -261,14 +261,14 @@ class SmartSchoolClient:
                             sender = message.get("title", None)
                             description = message.get("description", None)
                             url = message.get("url", None)
-                            userID = message.get("userID", None)
-                            if sender is not None and description is not None and url is not None and userID is not None:
-                                url = "https://" + self.domain + url[1:]
+                            user_id = message.get("userID", None)
+                            if sender is not None and description is not None and url is not None and user_id is not None:
+                                url = f"https://{self.domain}{url[1:]}"
                                 self.api_logger.info(
                                     f"Received message from {sender}: {description} ({url})"
                                 )
                                 if self.received_message_callback is not None:
-                                    self.received_message_callback(sender, description, url, userID)
+                                    self.received_message_callback(sender, description, url, user_id)
 
     def run_websocket(self):
         self.websocket_logger.info("Connecting to WebSocket")

@@ -1,7 +1,6 @@
 import os
 import logging
 import time
-
 import dotenv
 from smartschoolclient import SmartSchoolClient
 
@@ -19,33 +18,33 @@ if __name__ == '__main__':
     )
 
     messages = smart_school_client.list_messages()
-    print("You have {} messages.".format(len(messages)))
+    print(f"You have {len(messages)} messages.")
 
     for message in messages:
         message_data = smart_school_client.get_message_by_id(message["id"])
         print("Message data:")
-        print("Message ID: {}".format(message_data["id"]))
-        print("From: {}".format(message_data["from"]))
-        print("To: {}".format(message_data["to"] if message_data["to"] else "You"))
-        print("CC: {}".format(message_data["ccreceivers"]))
-        print("BCC: {}".format(message_data["bccreceivers"]))
-        print("Subject: {}".format(message_data["subject"]))
-        print("Date: {}".format(message_data["date"]))
-        print("Status: {}".format("Read" if message_data["status"] == "1" else "Unread"))
-        print("Attachment: {}".format(message_data["attachment"]))
-        print("Body: {}".format(message_data["body"]))
+        print(f"Message ID: {message_data['id']}")
+        print(f"From: {message_data['from']}")
+        print(f"To: {message_data['to'] if message_data['to'] else 'You'}")
+        print(f"CC: {message_data['ccreceivers']}")
+        print(f"BCC: {message_data['bccreceivers']}")
+        print(f"Subject: {message_data['subject']}")
+        print(f"Date: {message_data['date']}")
+        print(f"Status: {'Read' if message_data['status'] == '1' else 'Unread'}")
+        print(f"Attachment: {message_data['attachment']}")
+        print(f"Body: {message_data['body']}")
 
-        with open("messages/{}.txt".format(message_data["id"]), "w", encoding="utf-8") as f:
+        with open(f"messages/{message_data['id']}.txt", "w", encoding="utf-8") as f:
             f.write("Message data:\n")
-            f.write("Message ID: {}\n".format(message_data["id"]))
-            f.write("From: {}\n".format(message_data["from"]))
-            f.write("To: {}\n".format(message_data["to"] if message_data["to"] else "You"))
-            f.write("CC: {}\n".format(message_data["ccreceivers"]))
-            f.write("BCC: {}\n".format(message_data["bccreceivers"]))
-            f.write("Subject: {}\n".format(message_data["subject"]))
-            f.write("Date: {}\n".format(message_data["date"]))
-            f.write("Status: {}\n".format("Read" if message_data["status"] == "1" else "Unread"))
-            f.write("Attachment: {}\n".format(message_data["attachment"]))
-            f.write("Body: {}\n".format(message_data["body"]))
+            f.write(f"Message ID: {message_data['id']}\n")
+            f.write(f"From: {message_data['from']}\n")
+            f.write(f"To: {message_data['to'] if message_data['to'] else 'You'}\n")
+            f.write(f"CC: {message_data['ccreceivers']}\n")
+            f.write(f"BCC: {message_data['bccreceivers']}\n")
+            f.write(f"Subject: {message_data['subject']}\n")
+            f.write(f"Date: {message_data['date']}\n")
+            f.write(f"Status: {'Read' if message_data['status'] == '1' else 'Unread'}\n")
+            f.write(f"Attachment: {message_data['attachment']}\n")
+            f.write(f"Body: {message_data['body']}\n")
 
         time.sleep(1)
