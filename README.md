@@ -3,7 +3,7 @@ I made this library to communicate with smartschool for some reason.
 I was able to bind it with a voice assistant to tell me when I get a new message. (Home Assistant for reference)
 
 # How to use
-copy .env.example over to .env and modify the values
+Install using ``pip install smartschool -U``
 
 # Legal
 This library complies with the [SmartSchool User Agreement](https://www.smartschool.be/gebruikersovereenkomst/).  
