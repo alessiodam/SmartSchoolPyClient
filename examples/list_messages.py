@@ -9,9 +9,6 @@ from smartschoolapi_tkbstudios import SmartSchoolClient
 
 
 if __name__ == '__main__':
-    """
-    List messages
-    """
     os.makedirs("messages", exist_ok=True)
     dotenv.load_dotenv()
 
@@ -22,6 +19,7 @@ if __name__ == '__main__':
     smart_school_client.phpsessid = os.getenv('SMARTSCHOOL_PHPSESSID')
     smart_school_client.pid = os.getenv('SMARTSCHOOL_PID')
     smart_school_client.user_id = os.getenv('SMARTSCHOOL_USER_ID')
+    smart_school_client.platform_id = os.getenv('SMARTSCHOOL_PLATFORM_ID')
 
     messages = smart_school_client.list_messages()
     print(f"You have {len(messages)} messages.")

@@ -5,6 +5,8 @@ import json
 import logging
 from xml.etree import ElementTree
 from uuid import uuid4
+import re
+import datetime
 import colorlog
 import requests
 import websocket
@@ -37,6 +39,7 @@ class SmartSchoolClient:
         phpsessid: PHPSESSID
         pid: pid
         user_id: user id
+        platform_id: platform id
         received_message_callback: callback function
 
         api_logger: logger for API
@@ -47,13 +50,15 @@ class SmartSchoolClient:
         get_token_from_api()
         get_messages_from_api()
         get_message_by_id(message_id)
+        get_school_courses()
+        get_planner(from_date=None, to_date=None)
         list_messages()
-        authenticate()
         run_websocket()
     """
 
     def __init__(self, domain, loglevel=logging.DEBUG):
         self.domain = domain
+        self.platform_id = None
         self.phpsessid = None
         self.pid = None
         self.user_id = None
@@ -307,6 +312,97 @@ class SmartSchoolClient:
             return courses_json['own']
         self.api_logger.error("Could not get courses")
         raise ApiException("Could not get courses")
+
+    def get_school_courses(self):
+        """
+        WARNING: IN DEVELOPMENT
+        Get school courses
+        """
+        self.api_logger.info("Requesting school courses from API")
+        self.api_logger.debug("Sending request to get school courses")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Content-Type': 'application/json',
+        }
+        response = requests.post(
+            f'https://{self.domain}/course-list/api/v1/courses',
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("School courses received")
+            courses_json = json.loads(response.text)
+            return courses_json
+        self.api_logger.error("Could not get school courses")
+        raise ApiException("Could not get school courses")
+
+    def get_results(self, page: int = 1, per_page: int = 50):
+        """
+        Get results
+        """
+        self.api_logger.info("Requesting results from API")
+        self.api_logger.debug("Sending request to get results")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Content-Type': 'application/json',
+            'Accept': '*/*'
+        }
+        response = requests.get(
+            f'https://{self.domain}/results/api/v1/evaluations/?pageNumber={page}&itemsOnPage={per_page}',
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Results received")
+            results_json = json.loads(response.text)
+            return results_json
+        self.api_logger.error("Could not get results")
+
+    def get_planner(self, from_date=None, to_date=None):
+        """
+        IN DEVELOPMENT
+        Get planner
+
+        Args:
+            from_date: from date (YYYY-MM-DD)
+            to_date: to date (YYYY-MM-DD)
+        """
+        if from_date is not None and not re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', from_date):
+            raise ValueError("from_date must be in format YYYY-MM-DD")
+        if to_date is not None and not re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', to_date):
+            raise ValueError("to_date must be in format YYYY-MM-DD")
+
+        if from_date is None:
+            from_date = datetime.date.today().strftime("%Y-%m-%d")
+        if to_date is None:
+            to_date = (
+                    datetime.datetime.strptime(from_date, "%Y-%m-%d")
+                    +
+                    datetime.timedelta(days=7)
+            ).strftime("%Y-%m-%d")
+
+        self.api_logger.info("Requesting planner from API")
+        self.api_logger.debug("Sending request to get planner")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Content-Type': 'application/json',
+            'Accept': '*/*'
+        }
+        if from_date is None and to_date is None:
+            url = f'https://{self.domain}/planner/api/v1/planned-elements/user/{self.platform_id}_{self.user_id}_0'
+        else:
+            url = f"https://{self.domain}/planner/api/v1/planned-elements/user/{self.platform_id}{self.user_id}_0?from={from_date}&to={to_date}"
+        response = requests.get(
+            url=url,
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Planner received")
+            planner_json = response.json()
+            return planner_json
+        self.api_logger.error("Could not get planner")
+        return None
 
     # websockets
     def ws_on_error(self, _, error):
