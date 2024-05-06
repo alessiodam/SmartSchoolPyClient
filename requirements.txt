@@ -2,4 +2,4 @@ python-dotenv>=1.0.1
 requests>=2.31.0
 colorlog>=6.8.2
 websocket-client>=1.8.0
-smartschoolapi_tkbstudios>=1.0.0
+smartschoolapi_tkbstudios>=1.1.0

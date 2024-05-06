@@ -19,11 +19,11 @@ if __name__ == '__main__':
 
     smart_school_client = smsapi.SmartSchoolClient(
         domain=os.getenv('SMARTSCHOOL_DOMAIN'),
-        phpsessid=os.getenv('SMARTSCHOOL_PHPSESSID'),
-        pid=os.getenv('SMARTSCHOOL_PID'),
-        user_id=os.getenv('SMARTSCHOOL_USER_ID'),
-        loglevel=logging.INFO,
-        received_message_callback=received_message_callback
+        loglevel=logging.DEBUG,
     )
+    smart_school_client.phpsessid = os.getenv('SMARTSCHOOL_PHPSESSID')
+    smart_school_client.pid = os.getenv('SMARTSCHOOL_PID')
+    smart_school_client.user_id = os.getenv('SMARTSCHOOL_USER_ID')
+    smart_school_client.received_message_callback = received_message_callback
 
     smart_school_client.run_websocket()

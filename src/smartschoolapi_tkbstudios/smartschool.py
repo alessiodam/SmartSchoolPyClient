@@ -9,10 +9,18 @@ import colorlog
 import requests
 import websocket
 
+OFFICE365_SSO_INIT_URI = "/login/sso/init/office365"
+
 
 class ApiException(Exception):
     """
     Api exception
+    """
+
+
+class AuthException(ApiException):
+    """
+    Auth exception
     """
 
 
@@ -22,11 +30,7 @@ class SmartSchoolClient:
 
     Args:
         domain: SmartSchool domain
-        phpsessid: PHPSESSID
-        pid: pid
-        user_id: user id
         loglevel: logging level
-        received_message_callback: callback function
 
     Attributes:
         domain: SmartSchool domain
@@ -35,38 +39,46 @@ class SmartSchoolClient:
         user_id: user id
         received_message_callback: callback function
 
+        api_logger: logger for API
+        websocket_logger: logger for Websocket
+        auth_logger: logger for Authentication
+
     Methods:
         get_token_from_api()
         get_messages_from_api()
         get_message_by_id(message_id)
         list_messages()
+        authenticate()
         run_websocket()
     """
-    def __init__(self, domain, phpsessid, pid, user_id, loglevel=logging.DEBUG, received_message_callback=None):
-        self.domain = domain
-        self.phpsessid = phpsessid
-        self.pid = pid
-        self.user_id = user_id
-        self.received_message_callback = received_message_callback
 
-        handler = colorlog.StreamHandler()
-        handler.setFormatter(
+    def __init__(self, domain, loglevel=logging.DEBUG):
+        self.domain = domain
+        self.phpsessid = None
+        self.pid = None
+        self.user_id = None
+        self.received_message_callback = None
+        self.user_token = None
+
+        colorlog_handler = colorlog.StreamHandler()
+        colorlog_handler.setFormatter(
             colorlog.ColoredFormatter(
                 '%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s'
             )
         )
 
         self.api_logger = colorlog.getLogger("Core/API")
-        self.api_logger.addHandler(handler)
+        self.api_logger.addHandler(colorlog_handler)
         self.api_logger.setLevel(loglevel)
 
         self.websocket_logger = colorlog.getLogger("Core/Websocket")
-        self.websocket_logger.addHandler(handler)
+        self.websocket_logger.addHandler(colorlog_handler)
         self.websocket_logger.setLevel(loglevel)
 
-        self.user_token = self.get_token_from_api()
+        self.auth_logger = colorlog.getLogger("Core/Authentication")
+        self.auth_logger.addHandler(colorlog_handler)
+        self.auth_logger.setLevel(loglevel)
 
-    # general stuff
     def get_token_from_api(self):
         """
         Get token from API
@@ -85,7 +97,8 @@ class SmartSchoolClient:
         )
         if response.status_code == 200:
             self.api_logger.info("Token received")
-            return response.text
+            self.user_token = response.text
+            return self.user_token
         self.api_logger.error("Could not get token")
         raise ApiException("Could not get token")
 
@@ -189,7 +202,8 @@ class SmartSchoolClient:
             'label': message_elem.find('label').text,
             'receivers': [receiver.text for receiver in message_elem.findall('receivers/to')],
             'ccreceivers': [receiver.text for receiver in message_elem.findall('ccreceivers/cc')],
-            'bccreceivers': [receiver.text for receiver in message_elem.findall('bccreceivers/bcc')],
+            'bccreceivers': [receiver.text for receiver in
+                             message_elem.findall('bccreceivers/bcc')],
             'senderPicture': message_elem.find('senderPicture').text,
             'markedInLVS': message_elem.find('markedInLVS').text,
             'fromTeam': message_elem.find('fromTeam').text,
@@ -305,7 +319,8 @@ class SmartSchoolClient:
         """
         Websocket close
         """
-        self.websocket_logger.info("WebSocket connection closed: %s - %s", close_status_code, close_msg)
+        self.websocket_logger.info("WebSocket connection closed: %s - %s", close_status_code,
+                                   close_msg)
 
     def ws_on_open(self, ws):
         """
@@ -327,9 +342,10 @@ class SmartSchoolClient:
         message_data = json.loads(message)
         message_type = message_data.get("type", None)
         message_text = message_data.get("text", None)
+        message_request = message_data.get("request", None)
 
         if message_type is not None:
-            if message_type == "auth":
+            if message_type == "auth" and message_request == "getToken":
                 self.websocket_logger.info("Authentication successful!")
             elif message_type == "notificationListStart":
                 self.websocket_logger.info("Notification list started.")

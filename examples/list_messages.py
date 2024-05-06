@@ -17,11 +17,11 @@ if __name__ == '__main__':
 
     smart_school_client = SmartSchoolClient(
         domain=os.getenv('SMARTSCHOOL_DOMAIN'),
-        phpsessid=os.getenv('SMARTSCHOOL_PHPSESSID'),
-        pid=os.getenv('SMARTSCHOOL_PID'),
-        user_id=os.getenv('SMARTSCHOOL_USER_ID'),
-        loglevel=logging.INFO,
+        loglevel=logging.DEBUG,
     )
+    smart_school_client.phpsessid = os.getenv('SMARTSCHOOL_PHPSESSID')
+    smart_school_client.pid = os.getenv('SMARTSCHOOL_PID')
+    smart_school_client.user_id = os.getenv('SMARTSCHOOL_USER_ID')
 
     messages = smart_school_client.list_messages()
     print(f"You have {len(messages)} messages.")
