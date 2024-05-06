@@ -5,7 +5,7 @@ import os
 import logging
 import time
 import dotenv
-from smartschoolapi import SmartSchoolClient
+from smartschoolapi_tkbstudios import SmartSchoolClient
 
 
 if __name__ == '__main__':
