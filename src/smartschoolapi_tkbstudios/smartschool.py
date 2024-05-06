@@ -271,6 +271,29 @@ class SmartSchoolClient:
         self.api_logger.error("Could not get message")
         raise ApiException("Could not get message")
 
+    def get_courses(self):
+        """
+        Get courses
+        """
+        self.api_logger.info("Requesting courses from API")
+        self.api_logger.debug("Sending request to get courses")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Content-Type': 'application/json, text/javascript, */*;',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+        response = requests.post(
+            f'https://{self.domain}/Topnav/getCourseConfig',
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Courses received")
+            courses_json = json.loads(response.text)
+            return courses_json['own']
+        self.api_logger.error("Could not get courses")
+        raise ApiException("Could not get courses")
+
     # websockets
     def ws_on_error(self, _, error):
         """
@@ -329,12 +352,12 @@ class SmartSchoolClient:
                             user_id = message.get("userID", None)
                             if sender is not None and description is not None and url is not None and user_id is not None:
                                 url = f"https://{self.domain}{url[1:]}"
-                                self.api_logger.info(
+                                self.api_logger.debug(
                                     "Received message from %s: %s (%s)",
                                     sender, description, url
                                 )
                                 if self.received_message_callback is not None:
-                                    self.received_message_callback(sender, description, url, user_id)
+                                    self.received_message_callback(message_data)
 
     def run_websocket(self):
         """

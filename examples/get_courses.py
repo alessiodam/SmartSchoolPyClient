@@ -7,13 +7,6 @@ import dotenv
 import smartschoolapi_tkbstudios as smsapi
 
 
-def received_message_callback(message_data):
-    """
-    Callback function
-    """
-    print(f"Received message: {message_data}")
-
-
 if __name__ == '__main__':
     dotenv.load_dotenv()
 
@@ -22,8 +15,11 @@ if __name__ == '__main__':
         phpsessid=os.getenv('SMARTSCHOOL_PHPSESSID'),
         pid=os.getenv('SMARTSCHOOL_PID'),
         user_id=os.getenv('SMARTSCHOOL_USER_ID'),
-        loglevel=logging.INFO,
-        received_message_callback=received_message_callback
+        loglevel=logging.DEBUG,
     )
 
-    smart_school_client.run_websocket()
+    courses = smart_school_client.get_courses()
+
+    print("Your courses:")
+    for course in courses:
+        print("{} - {} - {}".format(course['id'], course['name'], course['teacher']))

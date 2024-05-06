@@ -3,7 +3,7 @@ I made this library to communicate with smartschool for some reason.
 I was able to bind it with a voice assistant to tell me when I get a new message. (Home Assistant for reference)
 
 # How to use
-Install using ``pip install smartschoolapi-tkbstudios -U``
+Install using ``pip install smartschoolapi_tkbstudios -U``
 
 # Legal
 This library complies with the [SmartSchool User Agreement](https://www.smartschool.be/gebruikersovereenkomst/).  
