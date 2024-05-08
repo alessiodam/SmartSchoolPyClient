@@ -579,6 +579,7 @@ class SmartSchoolClient:
             tickets_json = response.json()
             return tickets_json
         self.api_logger.error("Could not get tickets")
+        return None
 
     # websockets
     def ws_on_error(self, _, error):
