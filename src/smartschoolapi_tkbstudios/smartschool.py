@@ -584,25 +584,11 @@ class SmartSchoolClient:
                     "queueUuid": uuid4().hex,
                 }
                 ws.send(json.dumps(config_message))
-        elif message_text is not None:
-            if message_text == "pubsub message":
-                message = message_data.get("message", None)
-                if message is not None:
-                    message = json.loads(message)
-                    if message.get("type", None) == "notificationAlert":
-                        if message.get("module", None) == "Messages":
-                            sender = message.get("title", None)
-                            description = message.get("description", None)
-                            url = message.get("url", None)
-                            user_id = message.get("userID", None)
-                            if sender is not None and description is not None and url is not None and user_id is not None:
-                                url = f"https://{self.domain}{url[1:]}"
-                                self.api_logger.debug(
-                                    "Received message from %s: %s (%s)",
-                                    sender, description, url
-                                )
-                                if self.received_message_callback is not None:
-                                    self.received_message_callback(message_data)
+
+        if self.received_message_callback is not None:
+            self.received_message_callback(message_data)
+        else:
+            self.websocket_logger.info("Received message: %s", message_text)
 
     def run_websocket(self):
         """
