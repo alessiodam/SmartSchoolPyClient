@@ -581,6 +581,30 @@ class SmartSchoolClient:
         self.api_logger.error("Could not get tickets")
         return None
 
+    def intradesk_get_directory(self, directory: str = ""):
+        """
+        Get intradesk files
+        """
+        self.api_logger.info("Requesting intradesk files from API")
+        self.api_logger.debug("Sending request to get intradesk files")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Accept': 'application/json'
+        }
+        response = requests.get(
+            f'https://{self.domain}/intradesk/api/v1/4005/directory-listing'
+            f'/forTreeOnlyFolders{'/{directory}' if directory else ""}',
+            headers=headers,
+            timeout=10
+        )
+        self.api_logger.debug("Response: %s", response.text)
+        if response.status_code == 200:
+            self.api_logger.info("Intradesk folders received")
+            intradesk_files_json = response.json()
+            return intradesk_files_json
+        self.api_logger.error("Could not get intradesk folders")
+        return None
+
     # websockets
     def ws_on_error(self, _, error):
         """
