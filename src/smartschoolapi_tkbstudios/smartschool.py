@@ -537,6 +537,49 @@ class SmartSchoolClient:
         self.api_logger.error("Could not get upload zone dir")
         return None
 
+    def get_helpdesk_tickets_filters(self):
+        """
+        Get helpdesk tickets filter
+        """
+        self.api_logger.info("Requesting tickets filter from API")
+        self.api_logger.debug("Sending request to get tickets filter")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Accept': 'application/json'
+        }
+        response = requests.get(
+            f'https://{self.domain}/helpdesk/api/v1/filters/',
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Tickets filter received")
+            tickets_filter_json = response.json()
+            return tickets_filter_json
+        self.api_logger.error("Could not get tickets filter")
+        return None
+
+    def get_helpdesk_tickets_by_filter_id(self, filter_id):
+        """
+        Get helpdesk tickets by filter id
+        """
+        self.api_logger.info("Requesting tickets from API")
+        self.api_logger.debug("Sending request to get tickets")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Accept': 'application/json'
+        }
+        response = requests.get(
+            f'https://{self.domain}/helpdesk/api/v1/tickets/filter/{filter_id}',
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Tickets received")
+            tickets_json = response.json()
+            return tickets_json
+        self.api_logger.error("Could not get tickets")
+
     # websockets
     def ws_on_error(self, _, error):
         """
