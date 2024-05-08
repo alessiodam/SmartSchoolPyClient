@@ -40,10 +40,15 @@ if __name__ == '__main__':
 
     for child in upload_zone_dir['children']:
         print("")
-        print(f"Child:")
-        print(f"  ID: {child['attributes']['id']}")
-        print(f"  Title: {child['data']['title']}")
-        print(f"  State: {child['state']}")
-        if child['data']['icon'] != "":
-            print(f"  Icon: {child['data']['icon']}")
-        print(f"  Has children: {'yes ' if child['hasChildren'] else 'no'}")
+        child_data = smart_school_client.get_upload_zone_dir(
+            course_id=course_id,
+            dir_id=child['attributes']['id']
+        )[0]
+
+        print(f"ID: {child_data['attributes']['id']}")
+        print(f"Title: {child_data['data']['title']}")
+        print(f"State: {child_data['state']}")
+        print(f"Icon: {child_data['data']['icon']}")
+        print(f"Has children: {'yes ' if child_data['hasChildren'] else 'no'}")
+
+    print("")
