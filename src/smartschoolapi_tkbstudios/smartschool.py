@@ -467,6 +467,27 @@ class SmartSchoolClient:
         self.api_logger.error("Could not get planner")
         return None
 
+    def get_live_sessions(self):
+        """
+        Get live sessions
+        """
+        self.api_logger.info("Requesting live sessions from API")
+        self.api_logger.debug("Sending request to get live sessions")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+        }
+        response = requests.get(
+            f'https://{self.domain}/online-session/api/v1/meeting/',
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Live sessions received")
+            live_sessions_json = response.json()
+            return live_sessions_json
+        self.api_logger.error("Could not get live sessions")
+        return None
+
     # websockets
     def ws_on_error(self, _, error):
         """
