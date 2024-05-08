@@ -1,16 +1,26 @@
 """
-Get school courses example
+Delete message example
+How to use:
+python `examples/delete_message_by_id.py 123`
+where 123 is the message id
+
 """
 import os
 import logging
+import sys
 import dotenv
-import smartschoolapi_tkbstudios as smsapi
-
+from smartschoolapi_tkbstudios import SmartSchoolClient
 
 if __name__ == '__main__':
     dotenv.load_dotenv()
 
-    smart_school_client = smsapi.SmartSchoolClient(
+    if len(sys.argv) != 2:
+        print("Usage: python delmsg.py <message_id>")
+        sys.exit(1)
+
+    message_id = int(sys.argv[1])
+
+    smart_school_client = SmartSchoolClient(
         domain=os.getenv('SMARTSCHOOL_DOMAIN'),
         loglevel=logging.DEBUG,
     )
@@ -21,10 +31,4 @@ if __name__ == '__main__':
 
     smart_school_client.check_if_authenticated()
 
-    courses = smart_school_client.get_school_courses()
-
-    print("Your courses:")
-    for course in courses:
-        print(f"{course['id']}: "
-              f"{course['name']} "
-              f"({'visible' if course['isVisible'] else 'hidden'})")
+    messages = smart_school_client.delete_message_by_id(message_id)

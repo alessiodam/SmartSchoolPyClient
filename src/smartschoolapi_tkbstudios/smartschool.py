@@ -7,6 +7,7 @@ from xml.etree import ElementTree
 from uuid import uuid4
 import re
 import datetime
+import urllib
 import colorlog
 import requests
 import websocket
@@ -311,6 +312,47 @@ class SmartSchoolClient:
             return self.parse_single_message_response(response.text)
         self.api_logger.error("Could not get message")
         raise ApiException("Could not get message")
+
+    def delete_message_by_id(self, message_id):
+        """
+        Delete message by ID
+        """
+        self.api_logger.info("Deleting message from API")
+        self.api_logger.debug("Sending request to delete message with ID %s", message_id)
+
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+
+        data_dict = {
+            'command': '<request>\n'
+                       '\t<command>\n'
+                       '\t\t<subsystem>postboxes</subsystem>\n'
+                       '\t\t<action>quick delete</action>\n'
+                       '\t\t<params>\n'
+                       f'\t\t\t<param name="msgID"><![CDATA[{message_id}]]></param>\n'
+                       '\t\t</params>\n'
+                       '\t</command>\n'
+                       '</request>'
+        }
+
+        data = urllib.parse.urlencode(data_dict)
+
+        response = requests.post(
+            f'https://{self.domain}/?module=Messages&file=dispatcher',
+            headers=headers,
+            data=data,
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            self.api_logger.info("Message deleted with ID %s", message_id)
+            return True
+
+        self.api_logger.error("Could not delete message")
+        raise ApiException("Could not delete message")
 
     def get_courses(self):
         """
