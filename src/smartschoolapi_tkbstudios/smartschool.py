@@ -424,7 +424,6 @@ class SmartSchoolClient:
 
     def get_planner(self, from_date=None, to_date=None):
         """
-        IN DEVELOPMENT
         Get planner
 
         Args:
