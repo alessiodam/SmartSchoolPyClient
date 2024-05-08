@@ -1,17 +1,10 @@
 """
-Websocket client example
+Get courses example
 """
 import os
 import logging
 import dotenv
 import smartschoolapi_tkbstudios as smsapi
-
-
-def received_message_callback(message_data):
-    """
-    Callback function
-    """
-    print(f"Received message: {message_data}")
 
 
 if __name__ == '__main__':
@@ -25,8 +18,13 @@ if __name__ == '__main__':
     smart_school_client.pid = os.getenv('SMARTSCHOOL_PID')
     smart_school_client.user_id = os.getenv('SMARTSCHOOL_USER_ID')
     smart_school_client.platform_id = os.getenv('SMARTSCHOOL_PLATFORM_ID')
-    smart_school_client.received_message_callback = received_message_callback
 
     smart_school_client.check_if_authenticated()
 
-    smart_school_client.run_websocket()
+    courses = smart_school_client.get_school_courses()
+
+    print("Your courses:")
+    for course in courses:
+        print(f"{course['id']}: "
+              f"{course['name']} "
+              f"({'visible' if course['isVisible'] else 'hidden'})")

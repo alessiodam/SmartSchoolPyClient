@@ -52,6 +52,8 @@ if __name__ == '__main__':
     smart_school_client.user_id = os.getenv('SMARTSCHOOL_USER_ID')
     smart_school_client.platform_id = os.getenv('SMARTSCHOOL_PLATFORM_ID')
 
+    smart_school_client.check_if_authenticated()
+
     grades = smart_school_client.get_results()
 
     for grade in reversed(grades):

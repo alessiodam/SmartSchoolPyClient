@@ -47,6 +47,7 @@ class SmartSchoolClient:
         auth_logger: logger for Authentication
 
     Methods:
+        check_if_authenticated()
         get_token_from_api()
         get_messages_from_api()
         get_message_by_id(message_id)
@@ -56,7 +57,7 @@ class SmartSchoolClient:
         run_websocket()
     """
 
-    def __init__(self, domain, loglevel=logging.DEBUG):
+    def __init__(self, domain: str = None, loglevel: int = logging.DEBUG):
         self.domain = domain
         self.platform_id = None
         self.phpsessid = None
@@ -83,6 +84,27 @@ class SmartSchoolClient:
         self.auth_logger = colorlog.getLogger("Core/Authentication")
         self.auth_logger.addHandler(colorlog_handler)
         self.auth_logger.setLevel(loglevel)
+
+    def check_if_authenticated(self):
+        """
+        Check if authenticated
+        """
+        if self.pid is None or self.phpsessid is None:
+            raise AuthException("PID or PHPSESSID are not set")
+        response = requests.get(
+            f'https://{self.domain}/',
+            headers={
+                'Cookie': f'PHPSESSID={self.phpsessid}; pid={self.pid}'
+            },
+            allow_redirects=False
+        )
+        if response.status_code == 302:
+            raise AuthException("Not authenticated, invalid cookies (PID or PHPSESSID)")
+        elif response.status_code == 200:
+            pass
+        else:
+            raise ApiException("Could not check if authenticated")
+        return True
 
     def get_token_from_api(self):
         """
@@ -322,9 +344,9 @@ class SmartSchoolClient:
         self.api_logger.debug("Sending request to get school courses")
         headers = {
             'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
-            'Content-Type': 'application/json',
+            'Accept': 'application/json',
         }
-        response = requests.post(
+        response = requests.get(
             f'https://{self.domain}/course-list/api/v1/courses',
             headers=headers,
             timeout=10
