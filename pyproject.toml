@@ -1,6 +1,6 @@
 [project]
 name = "smartschoolapi_tkbstudios"
-version = "1.1.2"
+version = "1.2.0"
 authors = [
   { name="TKB Studios", email="tkbstudios@mail.tkbstudios.com" },
 ]
