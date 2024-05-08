@@ -15,7 +15,7 @@ if __name__ == '__main__':
     dotenv.load_dotenv()
 
     if len(sys.argv) != 2:
-        print("Usage: python delmsg.py <message_id>")
+        print("Usage: python examples/delete_message_by_id.py <message_id>")
         sys.exit(1)
 
     message_id = int(sys.argv[1])

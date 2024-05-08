@@ -488,6 +488,55 @@ class SmartSchoolClient:
         self.api_logger.error("Could not get live sessions")
         return None
 
+    def get_course_live_session(self, course_id):
+        """
+        Get course live sessions
+        """
+        self.api_logger.info("Requesting course live sessions from API")
+        self.api_logger.debug("Sending request to get course live sessions")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+        }
+        response = requests.get(
+            f'https://{self.domain}/course/api/v1/video-call/{self.platform_id}/{course_id}',
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Course live sessions received")
+            live_sessions_json = response.json()
+            return live_sessions_json
+        self.api_logger.error("Could not get course live sessions")
+        return None
+
+    def get_upload_zone_dir(self, course_id: int = None, dir_id: str = None):
+        """
+        Get upload zone dir
+        """
+        if course_id is None:
+            raise ValueError("course_id is required")
+        if dir_id is None:
+            dir_id = "0"
+
+        self.api_logger.info("Requesting upload zone dir from API")
+        self.api_logger.debug("Sending request to get upload zone dir")
+        headers = {
+            'Cookie': f'pid={self.pid}; PHPSESSID={self.phpsessid}',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        response = requests.post(
+            f'https://{self.domain}/?module=Uploadzone&file=tree&ssID={self.platform_id}&courseID={course_id}',
+            headers=headers,
+            data="id=" + dir_id,
+            timeout=10
+        )
+        if response.status_code == 200:
+            self.api_logger.info("Upload zone dir received")
+            upload_zone_dir_json = response.json()
+            return upload_zone_dir_json
+        self.api_logger.error("Could not get upload zone dir")
+        return None
+
     # websockets
     def ws_on_error(self, _, error):
         """
